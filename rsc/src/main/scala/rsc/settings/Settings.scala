@@ -25,10 +25,10 @@ object Settings {
       args match {
         case "--" +: rest =>
           loop(settings, false, rest)
-        case "--to-parsed-output" +: s_to_parsed_output +: rest if allowOptions =>
+        case "-to-parsed-output" +: s_to_parsed_output +: rest if allowOptions =>
           val parseOutputFile = Paths.get(s_to_parsed_output)
           loop(settings.copy(toParsedOutputFile = Some(parseOutputFile)), true, rest)
-        case "--from-parsed-output" +: s_from_parsed_output +: rest if allowOptions =>
+        case "-from-parsed-output" +: s_from_parsed_output +: rest if allowOptions =>
           val parseOutputFile = Paths.get(s_from_parsed_output)
           loop(settings.copy(fromParsedOutputFile = Some(parseOutputFile)), true, rest)
         case "-abi" +: s_abi +: rest if allowOptions =>
