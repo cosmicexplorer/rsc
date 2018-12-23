@@ -166,9 +166,8 @@ final object TreesProtocol extends DefaultJsonProtocol {
   }
   implicit val path: JsonFormat[Path] = lazyFormat(PathJ)
 
-  implicit val ambigId: JsonFormat[AmbigId] = jsonFormat1(AmbigId)
-  implicit val ambigSelect: JsonFormat[AmbigSelect] = lazyFormat(jsonFormat(
-    AmbigSelect, "qual", "id"))
+  implicit val ambigId: JsonFormat[AmbigId] = lazyFormat(jsonFormat(AmbigId, "value"))
+  implicit val ambigSelect: JsonFormat[AmbigSelect] = lazyFormat(jsonFormat(AmbigSelect, "qual", "id"))
   implicit object AmbigPathJ extends JsonFormat[AmbigPath] {
     def write(v: AmbigPath) = {
       val (classKey: String, convertedJson: JsValue) = v match {
@@ -285,7 +284,7 @@ final object TreesProtocol extends DefaultJsonProtocol {
   // TptExistential
   implicit val tptFloat: JsonFormat[TptFloat] = jsonFormat0(TptFloat)
   implicit val tptFunction: JsonFormat[TptFunction] = lazyFormat(jsonFormat(TptFunction, "targs"))
-  implicit val tptId: JsonFormat[TptId] = jsonFormat1(TptId)
+  implicit val tptId: JsonFormat[TptId] = lazyFormat(jsonFormat(TptId, "value"))
   implicit val tptInt: JsonFormat[TptInt] = jsonFormat0(TptInt)
   implicit val tptIntersect: JsonFormat[TptIntersect] = lazyFormat(jsonFormat(TptIntersect, "tpts"))
   implicit val tptLong: JsonFormat[TptLong] = jsonFormat0(TptLong)
@@ -552,7 +551,7 @@ final object TreesProtocol extends DefaultJsonProtocol {
         case _: ImporteeName => ("ImporteeName", v.asInstanceOf[ImporteeName].toJson)
         case _: ImporteeRename => ("ImporteeRename", v.asInstanceOf[ImporteeRename].toJson)
         case _: ImporteeUnimport => ("ImporteeUnimport", v.asInstanceOf[ImporteeUnimport].toJson)
-        case _: ImporteeWildcard => ("ImporteeWildcard", v.asInstanceOf[ImporteeWildcard])
+        case _: ImporteeWildcard => ("ImporteeWildcard", v.asInstanceOf[ImporteeWildcard].toJson)
       }
       JsArray(JsString(classKey), convertedJson)
     }
@@ -654,14 +653,14 @@ final object TreesProtocol extends DefaultJsonProtocol {
     PatExtract, "fun", "targs", "args"))
   implicit val patExtractInfix: JsonFormat[PatExtractInfix] = lazyFormat(jsonFormat(
     PatExtractInfix, "lhs", "op", "rhs"))
-  implicit val patId: JsonFormat[PatId] = jsonFormat1(PatId)
+  implicit val patId: JsonFormat[PatId] = lazyFormat(jsonFormat(PatId, "value"))
   implicit val patInterpolate: JsonFormat[PatInterpolate] = lazyFormat(jsonFormat(
     PatInterpolate, "id", "parts", "args"))
   implicit val patRepeat: JsonFormat[PatRepeat] = lazyFormat(jsonFormat(PatRepeat, "pat"))
   implicit val patSelect: JsonFormat[PatSelect] = lazyFormat(jsonFormat(PatSelect, "qual", "id"))
   implicit val patTuple: JsonFormat[PatTuple] = lazyFormat(jsonFormat(PatTuple, "args"))
   implicit val patVar: JsonFormat[PatVar] = lazyFormat(jsonFormat(PatVar, "mods", "id", "tpt"))
-  implicit val patXml: JsonFormat[PatXml] = jsonFormat1(PatXml)
+  implicit val patXml: JsonFormat[PatXml] = lazyFormat(jsonFormat(PatXml, "raw"))
 
   // Term
   // Need to case match against Any.
@@ -802,7 +801,7 @@ final object TreesProtocol extends DefaultJsonProtocol {
   implicit val termFor: JsonFormat[TermFor] = lazyFormat(jsonFormat(TermFor, "enums", "body"))
   implicit val termForYield: JsonFormat[TermForYield] = lazyFormat(jsonFormat(TermForYield, "enums", "body"))
   implicit val termFunction: JsonFormat[TermFunction] = lazyFormat(jsonFormat(TermFunction, "params", "body"))
-  implicit val termId: JsonFormat[TermId] = jsonFormat1(TermId)
+  implicit val termId: JsonFormat[TermId] = lazyFormat(jsonFormat(TermId, "value"))
   implicit val termIf: JsonFormat[TermIf] = lazyFormat(jsonFormat(TermIf, "cond", "thenp", "elsep"))
   implicit val termInterpolate: JsonFormat[TermInterpolate] = lazyFormat(jsonFormat(TermInterpolate, "id", "parts", "args"))
   // Extras needing Term
@@ -836,7 +835,7 @@ final object TreesProtocol extends DefaultJsonProtocol {
   implicit val termWhile: JsonFormat[TermWhile] = lazyFormat(jsonFormat(TermWhile, "cond", "body"))
   implicit val termWildcard: JsonFormat[TermWildcard] = jsonFormat0(TermWildcard)
   implicit val termWildcardFunction: JsonFormat[TermWildcardFunction] = lazyFormat(jsonFormat(TermWildcardFunction, "ids", "body"))
-  implicit val termXml: JsonFormat[TermXml] = jsonFormat1(TermXml)
+  implicit val termXml: JsonFormat[TermXml] = lazyFormat(jsonFormat(TermXml, "raw"))
 
   implicit val typeParam: JsonFormat[TypeParam] = lazyFormat(jsonFormat(
     TypeParam, "mods", "id", "tparams", "lbound", "ubound", "vbounds", "cbounds"))
@@ -897,5 +896,5 @@ final object TreesProtocol extends DefaultJsonProtocol {
 
   implicit val caseJ: JsonFormat[Case] = lazyFormat(jsonFormat(Case, "pat", "cond", "stats"))
   implicit val importer: JsonFormat[Importer] = lazyFormat(jsonFormat(Importer, "mods", "qual", "importees"))
-  implicit val source: RootJsonFormat[Source] = jsonFormat1(Source)
+  implicit val source: RootJsonFormat[Source] = jsonFormat(Source, "stats")
 }
