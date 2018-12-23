@@ -6,6 +6,8 @@ import java.io._
 import java.nio.file._
 
 final case class Settings(
+    toParsedOutputFile: Option[Path] = None,
+    fromParsedOutputFile: Option[Path] = None,
     abi: Abi = Abi211,
     artifacts: List[Artifact] = List(ArtifactSemanticdb, ArtifactScalasig),
     cp: List[Path] = Nil,
@@ -23,6 +25,12 @@ object Settings {
       args match {
         case "--" +: rest =>
           loop(settings, false, rest)
+        case "--to-parsed-output" +: s_to_parsed_output +: rest if allowOptions =>
+          val parseOutputFile = Paths.get(s_to_parsed_output)
+          loop(settings.copy(toParsedOutputFile = Some(parseOutputFile)), true, rest)
+        case "--from-parsed-output" +: s_from_parsed_output +: rest if allowOptions =>
+          val parseOutputFile = Paths.get(s_from_parsed_output)
+          loop(settings.copy(fromParsedOutputFile = Some(parseOutputFile)), true, rest)
         case "-abi" +: s_abi +: rest if allowOptions =>
           s_abi match {
             case "211" =>

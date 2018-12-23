@@ -24,45 +24,67 @@ class Compiler(val settings: Settings, val reporter: Reporter) extends AutoClose
   var todo: Todo = Todo()
   var output: Output = Output(settings)
 
-  def run(): Unit = {
-    for ((taskName, taskFn) <- tasks) {
-      val start = System.nanoTime()
-      try {
-        taskFn()
-      } catch {
-        case ex: Throwable =>
-          reporter.append(CrashMessage(ex))
-      }
-      val end = System.nanoTime()
-      val ms = (end - start) / 1000000
-      if (settings.xprint("timings")) {
-        reporter.append(VerboseMessage(s"Finished $taskName in $ms ms"))
-      }
-      if (settings.xprint(taskName)) {
-        reporter.append(VerboseMessage(this.str))
-      }
-      if (taskName == "parse" && settings.xprint("scan")) {
-        val p = new Printer
-        PrettyCompiler.xprintScan(p, this)
-        reporter.append(VerboseMessage(p.toString))
-      }
-      if (settings.ystopAfter(taskName)) {
-        return
-      }
-      if (taskName == "parse" && settings.ystopAfter("scan")) {
-        return
-      }
-      if (reporter.problems.nonEmpty) {
-        reporter.append(ErrorSummary(reporter.problems))
-        return
-      }
+  def runTask(taskName: String, taskFn: () => Unit): Unit = {
+    val start = System.nanoTime()
+    try {
+      taskFn()
+    } catch {
+      case ex: Throwable =>
+        reporter.append(CrashMessage(ex))
+    }
+    val end = System.nanoTime()
+    val ms = (end - start) / 1000000
+    if (settings.xprint("timings")) {
+      reporter.append(VerboseMessage(s"Finished $taskName in $ms ms"))
+    }
+    if (settings.xprint(taskName)) {
+      reporter.append(VerboseMessage(this.str))
+    }
+    if (taskName == "parse" && settings.xprint("scan")) {
+      val p = new Printer
+      PrettyCompiler.xprintScan(p, this)
+      reporter.append(VerboseMessage(p.toString))
+    }
+    if (settings.ystopAfter(taskName)) {
+      return
+    }
+    if (taskName == "parse" && settings.ystopAfter("scan")) {
+      return
+    }
+    if (reporter.problems.nonEmpty) {
+      reporter.append(ErrorSummary(reporter.problems))
+      return
     }
   }
 
+  def parseSerialized(): List[Source] = {
+    for ((taskName, taskFn) <- textOnlyTasks) {
+      runTask(taskName, taskFn)
+    }
+    trees
+  }
+
+  def acceptParsedTrees(previousTrees: List[Source]): Unit = {
+    trees = previousTrees
+  }
+
+  def run(): Unit = {
+    for ((taskName, taskFn) <- tasks) {
+      runTask(taskName, taskFn)
+    }
+  }
+
+  private def textOnlyTasks: List[(String, () => Unit)] = List(
+    // Can be run on purely the text of a source file!
+    "parse" -> (() => parse())
+  )
+
   private def tasks: List[(String, () => Unit)] = List(
-    "parse" -> (() => parse()),
+    // This looks like it just initializes the todo/env for the subsequent schedule phase.
     "index" -> (() => index()),
+    // This either initializes the outline or operates on it.
     "schedule" -> (() => schedule()),
+    // Requires dependencies to outline correctly!
     "outline" -> (() => outline()),
     "semanticdb" -> (() => semanticdb()),
     "scalasig" -> (() => scalasig())
@@ -70,6 +92,9 @@ class Compiler(val settings: Settings, val reporter: Reporter) extends AutoClose
 
   private def parse(): Unit = {
     val inputs = settings.ins.map(in => Input(in))
+    if (inputs.isEmpty) {
+      reporter.append(FilesNotFound())
+    }
     trees = inputs.flatMap { input =>
       if (Files.exists(input.path)) {
         if (settings.ystopAfter("scan")) {
@@ -88,9 +113,6 @@ class Compiler(val settings: Settings, val reporter: Reporter) extends AutoClose
         reporter.append(FileNotFound(input))
         None
       }
-    }
-    if (inputs.isEmpty) {
-      reporter.append(FilesNotFound())
     }
   }
 
