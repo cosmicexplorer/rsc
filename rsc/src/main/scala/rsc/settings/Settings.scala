@@ -14,7 +14,19 @@ final case class Settings(
     ins: List[Path] = Nil,
     xprint: Set[String] = Set[String](),
     ystopAfter: Set[String] = Set[String]()
-)
+) {
+
+  private def makeAbsolute(root: Path)(p: Path): Path =
+    if (p.isAbsolute) p
+    else root.resolve(p)
+
+  def withAbsolutePaths(cwd: Path): Settings = copy(
+    cp = cp.map(makeAbsolute(cwd)),
+    d = makeAbsolute(cwd)(d),
+    ins = ins.map(makeAbsolute(cwd))
+  )
+}
+
 
 // FIXME: https://github.com/twitter/rsc/issues/166
 object Settings {
