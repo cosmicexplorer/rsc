@@ -6,7 +6,7 @@ import rsc.rules.util.memoize
 import scala.collection.mutable
 import scala.meta._
 import scala.meta.internal.{semanticdb => s}
-import scala.meta.internal.semanticdb.Scala._
+// import scala.meta.internal.semanticdb.Scala._
 import scala.meta.internal.semanticdb.Scala.{Descriptor => d}
 import scala.meta.internal.semanticdb.Scala.{Names => n}
 
