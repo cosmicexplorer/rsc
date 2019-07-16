@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-sbt publishLocal publishM2 \
+sbt '~publishLocal' '~publishM2' \
   &> >(tee /dev/stderr) \
   | sed -rne 's#^.*rsc_2.12-(.*)\.pom.*#\1#gp' \
   | head -n1 \
