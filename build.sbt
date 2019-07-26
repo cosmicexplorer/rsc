@@ -1,6 +1,6 @@
 lazy val V = new {
   val asm = "6.0"
-  val scala = computeScalaVersionFromTravisYml("2.12")
+  val scala = "2.12.8-bin-SNAPSHOT"
   val scalafix = computeScalafixVersionFromBinScalafix()
   val scalameta = "4.1.4"
   val scalatest = "3.0.5"
@@ -172,7 +172,7 @@ lazy val scalafixTests = project
   .enablePlugins(ScalafixTestkitPlugin)
   .settings(
     commonSettings,
-    libraryDependencies += "ch.epfl.scala" % "scalafix-testkit" % V.scalafix % Test cross CrossVersion.full,
+    libraryDependencies += "ch.epfl.scala" % "scalafix-testkit_2.12.8" % V.scalafix % Test,
     scalafixTestkitOutputSourceDirectories :=
       sourceDirectories.in(scalafixOutput, Compile).value ++
         sourceDirectories.in(examplesCore, Compile).value,
@@ -241,6 +241,7 @@ lazy val tests = project
 
 lazy val commonSettings = Seq(
   organization := "com.twitter",
+  scalaHome := Some(file("/Users/dmcclanahan/tools/scala/build/pack")),
   scalaVersion := V.scala,
   crossScalaVersions := Seq(V.scala),
   scalacOptions ++= Seq("-Ypatmat-exhaust-depth", "off"),
@@ -326,7 +327,7 @@ lazy val semanticdbSettings = Def.settings(
   scalacOptions -= "-feature",
   scalacOptions -= "-Ywarn-unused-import",
   scalacOptions -= "-Xfatal-warnings",
-  addCompilerPlugin("org.scalameta" %% "semanticdb-scalac" % V.scalameta cross CrossVersion.full),
+  addCompilerPlugin("org.scalameta" % "semanticdb-scalac_2.12.8" % V.scalameta),
   scalacOptions += "-Yrangepos",
   scalacOptions += "-P:semanticdb:text:off",
   scalacOptions += "-P:semanticdb:symbols:all",
