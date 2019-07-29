@@ -4,7 +4,8 @@ package rsc.cli
 
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file._
-import rsc.Compiler
+import rsc.{Compiler, CachedCompiler}
+import rsc.classpath.Classpath
 import rsc.pretty._
 import rsc.report._
 import rsc.settings._

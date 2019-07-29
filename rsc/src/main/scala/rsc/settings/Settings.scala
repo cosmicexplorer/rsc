@@ -24,7 +24,6 @@ final case class Settings(
     ncache: java.util.HashMap[String, Name] =
       new java.util.HashMap[String, Name](),
     classpath: Classpath = null
-
 )
 
 // FIXME: https://github.com/twitter/rsc/issues/166

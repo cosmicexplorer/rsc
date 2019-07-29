@@ -9,9 +9,10 @@ import java.util.HashMap
 import java.util.concurrent.{ConcurrentHashMap, LinkedBlockingQueue, ThreadPoolExecutor}
 import rsc.classpath.javacp._
 import rsc.classpath.scalacp._
-import rsc.report.VerboseMessage
+import rsc.report._
 import rsc.semantics._
 import rsc.util._
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 import scala.meta.internal.{semanticdb => s}
@@ -126,16 +127,22 @@ final class Classpath private (index: Index) extends AutoCloseable {
     index.close()
   }
 
-  def go(paths: List[Path]): Unit = this.synchronized {
+  // FIXME: `this.synchronized` is WAY too coarse-grained!!! It also locks during i/o (!!!!)
+  def go(rawPaths: List[Path])(implicit reporter: Reporter): Unit = this.synchronized {
+    val paths = rawPaths.map(_.toRealPath()).distinct
     val s = System.nanoTime()
-    val paths1 = paths.filterNot(p => pathsDone.contains(p.toString))
+    val paths1 = {
+      val (alreadyDone, todo) = paths.partition(p => pathsDone.contains(p.toString))
+      reporter.append(VerboseMessage(s"classpath paths already done: $alreadyDone, todo: $todo"))
+      todo
+    }
     index.go(paths1)
     paths1.foreach(p => pathsDone.add(p.toString))
     val e = System.nanoTime()
     val elapsed = ((e - s) / 1000000)
     time += elapsed
 
-    println(s"Finished indexgo in $elapsed ms")
+    reporter.append(VerboseMessage(s"Finished indexgo in $elapsed ms"))
   }
 }
 

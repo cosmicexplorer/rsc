@@ -137,7 +137,7 @@ sealed abstract class OutlineScope(sym: Symbol) extends Scope(sym) {
   }
 
   override def enter(name: Name, sym: Symbol): Symbol = {
-    if (status.isPending) {
+    if (status.isPending || status.isSucceeded) {
       sym match {
         case NoSymbol =>
           crash(name)
@@ -159,7 +159,8 @@ sealed abstract class OutlineScope(sym: Symbol) extends Scope(sym) {
           }
       }
     } else {
-      crash(this)
+      crash(s"status: $status, name: $name, sym: $sym, this: $this")
+      // crash(this)
     }
   }
 

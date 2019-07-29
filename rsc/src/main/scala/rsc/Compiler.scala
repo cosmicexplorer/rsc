@@ -20,22 +20,29 @@ import rsc.symtab._
 import rsc.syntax._
 import rsc.util._
 
-class Compiler(val settings: Settings, val reporter: Reporter) extends AutoCloseable with Pretty {
+case class CachedCompiler(gensyms: Gensyms, classpath: Classpath, symtab: Symtab, infos: Infos)
+
+object CachedCompiler {
+  def firstUse(cp: Classpath): CachedCompiler = CachedCompiler(
+    gensyms = Gensyms(),
+    classpath = cp,
+    symtab = Symtab(cp),
+    infos = Infos(cp)
+  )
+}
+
+class Compiler(val settings: Settings, val reporter: Reporter, cachedCompiler: CachedCompiler) extends AutoCloseable with Pretty {
 
   private val startInit = System.nanoTime()
 
   var trees: List[Source] = Nil
-  var gensyms: Gensyms = Gensyms()
-  var classpath: Classpath =
-    profile(settings, reporter, "classpath") {
-      if (settings.classpath == null) throw new Exception("wa")
-      else settings.classpath
-    }
+  val gensyms: Gensyms = cachedCompiler.gensyms
+  val classpath: Classpath = cachedCompiler.classpath
 
-  var symtab: Symtab = Symtab(classpath)
-  var todo: Todo = Todo()
-  var infos: Infos = Infos(classpath)
-  var output: Output = Output(settings)
+  val symtab: Symtab = cachedCompiler.symtab
+  val todo: Todo = Todo()
+  val infos: Infos = cachedCompiler.infos
+  val output: Output = Output(settings)
 
   private val endInit = System.nanoTime()
   private val msInit = (endInit - startInit) / 1000000
@@ -151,6 +158,14 @@ class Compiler(val settings: Settings, val reporter: Reporter) extends AutoClose
     indexer.apply()
   }
 
+  /* TODO: seeing failures to resolve symbols such as:
+    [error] util/util-test/src/test/scala/com/twitter/util/testing/ArgumentCaptureTest.scala:8: error: unbound: type ArgumentCapture
+    class ArgumentCaptureTest extends FunSuite with MockitoSugar with ArgumentCapture {
+
+     This works if we *don't* erase the rsc scalasig files! This means it can't find it in the env
+     of a subsequent rsc compile! THIS MEANS WE NEED TO GET OUR CLASSPATH FROM A PREVIOUS RSC
+     COMPILE INTO THE ENV BECAUSE THE OUTLINE INFOS ISN'T IT ALONE!!!
+   */
   private def schedule(): Unit = {
     val scheduler = Scheduler(settings, reporter, gensyms, classpath, symtab, todo)
     trees.foreach { tree =>
@@ -245,10 +260,16 @@ class Compiler(val settings: Settings, val reporter: Reporter) extends AutoClose
   def printRepl(p: Printer): Unit = {
     PrettyCompiler.repl(p, this)
   }
+
+  def saveState = CachedCompiler(gensyms, classpath, symtab, infos)
 }
 
 object Compiler {
   def apply(settings: Settings, reporter: Reporter): Compiler = {
-    new Compiler(settings, reporter)
+    Compiler(settings, reporter, CachedCompiler.firstUse(settings.classpath))
+  }
+
+  def apply(settings: Settings, reporter: Reporter, cachedCompiler: CachedCompiler): Compiler = {
+    new Compiler(settings, reporter, cachedCompiler)
   }
 }

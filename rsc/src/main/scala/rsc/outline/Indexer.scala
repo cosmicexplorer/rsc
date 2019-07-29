@@ -16,15 +16,24 @@ final class Indexer private (
     classpath: Classpath,
     symtab: Symtab,
     todo: Todo) {
+
+  def getOrInitializeScope(scope: Scope): Scope =
+    if (symtab.scopes.contains(scope.sym)) {
+      symtab.scopes(scope.sym)
+    } else {
+      symtab.scopes.put(scope.sym, scope)
+      scope
+    }
+
   def apply(): Unit = {
     val rootEnv = Env(Root(ScalaLanguage), Nil)
-    val rootScope = PackageScope(RootPackage, classpath)
-    symtab.scopes.put(rootScope.sym, rootScope)
+
+    val rootScope = getOrInitializeScope(PackageScope(RootPackage, classpath))
+
     todo.add(rootEnv, rootScope)
 
     val emptyEnv = Env(Root(ScalaLanguage), Nil)
-    val emptyScope = PackageScope(EmptyPackage, classpath)
-    symtab.scopes.put(emptyScope.sym, emptyScope)
+    val emptyScope = getOrInitializeScope(PackageScope(EmptyPackage, classpath))
     todo.add(emptyEnv, emptyScope)
 
     sanityCheck("java/lang/", JavaLanguage, ScalaLanguage)
