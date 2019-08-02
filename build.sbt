@@ -1,6 +1,6 @@
 lazy val V = new {
   val asm = "6.0"
-  val scala = "2.12.8-bin-SNAPSHOT"
+  val scala = "2.12.8"
   val scalafix = computeScalafixVersionFromBinScalafix()
   val scalameta = "4.1.4"
   val scalatest = "3.0.5"
@@ -241,7 +241,6 @@ lazy val tests = project
 
 lazy val commonSettings = Seq(
   organization := "com.twitter",
-  scalaHome := Some(file("/Users/dmcclanahan/tools/scala/build/pack")),
   scalaVersion := V.scala,
   crossScalaVersions := Seq(V.scala),
   scalacOptions ++= Seq("-Ypatmat-exhaust-depth", "off"),
@@ -258,7 +257,9 @@ lazy val commonSettings = Seq(
   baseDirectory in Test := (baseDirectory in ThisBuild).value,
   cancelable := true,
   resolvers += Opts.resolver.sonatypeReleases,
-  resolvers += Opts.resolver.sonatypeSnapshots
+  resolvers += Opts.resolver.sonatypeSnapshots,
+  sources in (Compile, doc) := Seq.empty,
+  publishArtifact in (Compile, packageDoc) := false
 )
 
 lazy val publishableSettings = Seq(
