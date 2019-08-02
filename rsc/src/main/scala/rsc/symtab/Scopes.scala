@@ -19,33 +19,21 @@ trait Scopes {
   private val refineScopes = new HashMap[TptRefine, RefineScope]
 
   object scopes {
-    def apply(sym: Symbol): Scope = {
-      val scope1 = outlineScopes.get(sym)
-      if (scope1 != null) return scope1
-      val scope2 = classpathScopes.get(sym)
-      if (scope2 != null) return scope2
-      val scope3 = tryLoadClasspathScope(sym)
-      if (scope3 != null) return scope3
-      else crash(sym)
-    }
+    private def findSymbolMaybeInClasspath(sym: Symbol): Option[Scope] =
+      Option(outlineScopes.get(sym))
+        .orElse(Option(classpathScopes.get(sym)))
+        .orElse(Option(tryLoadClasspathScope(sym)))
 
-    def apply(tpt: TptExistential): ExistentialScope = {
-      val scope = existentialScopes.get(tpt)
-      if (scope != null) scope
-      else crash(tpt)
-    }
+    def apply(sym: Symbol): Scope = findSymbolMaybeInClasspath(sym).getOrElse(crash(sym))
 
-    def apply(tpt: TptRefine): RefineScope = {
-      val scope = refineScopes.get(tpt)
-      if (scope != null) scope
-      else crash(tpt)
-    }
+    def apply(tpt: TptExistential): ExistentialScope = Option(existentialScopes.get(tpt))
+      .getOrElse(crash(tpt))
 
-    def contains(sym: Symbol): Boolean = {
-      outlineScopes.containsKey(sym) ||
-      classpathScopes.containsKey(sym) ||
-      tryLoadClasspathScope(sym) != null
-    }
+    def apply(tpt: TptRefine): RefineScope =
+      Option(refineScopes.get(tpt))
+        .getOrElse(crash(tpt))
+
+    def contains(sym: Symbol): Boolean = findSymbolMaybeInClasspath(sym).isDefined
 
     def contains(tpt: TptExistential): Boolean = {
       existentialScopes.containsKey(tpt)
