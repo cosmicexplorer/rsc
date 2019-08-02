@@ -54,10 +54,12 @@ final class Writer private (settings: Settings, reporter: Reporter, infos: Infos
 
     val (_, elapsed2) = time {
       val path = Paths.get(classfile.name + ".class")
+      reporter.append(VerboseMessage(s"writing out classfile path $path (${NormalizedPathForCaching(path)}) as scalasig!!!"))
       output.write(path, classfile.toBinary)
     }
     timings.writeTiming += elapsed2
 
+    // FIXME: what is the "marker" classfile?
     pickle.history.modules.foreach { moduleSym =>
       val markerPath = Paths.get(moduleSym.bytecodeLoc)
       val markerName = markerPath.toString.stripSuffix(".class")
