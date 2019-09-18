@@ -37,15 +37,15 @@ trait FileFixtures extends ToolUtil {
     javaLibrary ++ BuildInfo.depsClasspath.map(_.toPath).toList
   }
 
-  lazy val errorDirs: List[Path] = {
-    List("examples/errordeps", "examples/error").map(buildRoot.resolve)
-  }
+  // lazy val errorDirs: List[Path] = {
+  //   List("examples/errordeps", "examples/error").map(buildRoot.resolve)
+  // }
 
-  lazy val errorFiles: List[List[Path]] = errorDirs.map(scalaFilesIn)
+  // lazy val errorFiles: List[List[Path]] = errorDirs.map(scalaFilesIn)
 
-  lazy val errorClasspath: List[Path] = {
-    javaLibrary ++ BuildInfo.errorClasspath.map(_.toPath).toList
-  }
+  // lazy val errorsClasspath: List[Path] = {
+  //   javaLibrary ++ BuildInfo.errorClasspath.map(_.toPath).toList
+  // }
 
   lazy val functionDir: Path = {
     buildRoot.resolve("examples/function")

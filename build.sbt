@@ -100,14 +100,14 @@ lazy val examplesDeps3 = project
   .dependsOn(examplesDeps2)
   .settings(commonSettings)
 
-lazy val examplesError = project
-  .in(file("examples/error"))
-  .dependsOn(examplesErrordeps)
-  .settings(commonSettings)
+// lazy val examplesError = project
+//   .in(file("examples/error"))
+//   .dependsOn(examplesErrordeps)
+//   .settings(commonSettings)
 
-lazy val examplesErrordeps = project
-  .in(file("examples/errordeps"))
-  .settings(commonSettings)
+// lazy val examplesErrordeps = project
+//   .in(file("examples/errordeps"))
+//   .settings(commonSettings)
 
 lazy val examplesFunction = project
   .in(file("examples/function"))
@@ -218,9 +218,9 @@ lazy val tests = project
       BuildInfoKey.map(dependencyClasspath.in(examplesCore, Compile)) {
         case (k, v) => "coreClasspath" -> v.map(_.data)
       },
-      BuildInfoKey.map(dependencyClasspath.in(examplesErrordeps, Compile)) {
-        case (k, v) => "errorClasspath" -> v.map(_.data)
-      },
+      // BuildInfoKey.map(dependencyClasspath.in(examplesErrordeps, Compile)) {
+      //   case (k, v) => "errorClasspath" -> v.map(_.data)
+      // },
       BuildInfoKey.map(dependencyClasspath.in(examplesFunction, Compile)) {
         case (k, v) => "functionClasspath" -> v.map(_.data)
       },

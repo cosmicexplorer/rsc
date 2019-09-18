@@ -24,7 +24,7 @@ sealed trait Scope {
   private val _member: MemberKey => String = memoize { key: MemberKey =>
     val MemberKey(symtab, sym, name) = key
 
-    def getInfo(desc: Descriptor): Option[s.SymbolInformation] =
+    def getInfo(desc: d): Option[s.SymbolInformation] =
       symtab
         .info(Symbols.Global(sym, desc))
         .orElse(symtab.info(Symbols.Global(s"${sym}package.", desc)))
