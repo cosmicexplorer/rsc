@@ -20,25 +20,18 @@ import rsc.symtab._
 import rsc.syntax._
 import rsc.util._
 
-case class CachedCompiler(
-  gensyms: Gensyms,
-  classpath: Classpath,
-  symtab: Symtab,
-  infos: Infos,
-  outputCache: InMemoryOutputCache
-)
+case class CachedCompiler(gensyms: Gensyms, classpath: Classpath, symtab: Symtab, infos: Infos)
 
 object CachedCompiler {
   def firstUse(cp: Classpath): CachedCompiler = CachedCompiler(
     gensyms = Gensyms(),
     classpath = cp,
     symtab = Symtab(cp),
-    infos = Infos(cp),
-    outputCache = SingletonOutputCache.get
+    infos = Infos(cp)
   )
 }
 
-class Compiler(val settings: Settings, implicit val reporter: Reporter, cachedCompiler: CachedCompiler) extends AutoCloseable with Pretty {
+class Compiler(val settings: Settings, val reporter: Reporter, cachedCompiler: CachedCompiler) extends AutoCloseable with Pretty {
 
   private val startInit = System.nanoTime()
 
@@ -49,7 +42,7 @@ class Compiler(val settings: Settings, implicit val reporter: Reporter, cachedCo
   val symtab: Symtab = cachedCompiler.symtab
   val todo: Todo = Todo()
   val infos: Infos = cachedCompiler.infos
-  val output: Output = Output(settings, cachedCompiler.outputCache)
+  val output: Output = Output(settings)
 
   private val endInit = System.nanoTime()
   private val msInit = (endInit - startInit) / 1000000
@@ -268,7 +261,7 @@ class Compiler(val settings: Settings, implicit val reporter: Reporter, cachedCo
     PrettyCompiler.repl(p, this)
   }
 
-  def saveState = CachedCompiler(gensyms, classpath, symtab, infos, cachedCompiler.outputCache)
+  def saveState = CachedCompiler(gensyms, classpath, symtab, infos)
 }
 
 object Compiler {

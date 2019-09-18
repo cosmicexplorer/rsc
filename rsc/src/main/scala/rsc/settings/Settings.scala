@@ -23,8 +23,7 @@ final case class Settings(
     cacheSymIsEmbedded: java.util.HashMap[String, Boolean] = new java.util.HashMap[String, Boolean](),
     ncache: java.util.HashMap[String, Name] =
       new java.util.HashMap[String, Name](),
-    classpath: Classpath = null,
-    memoryLocations: MemoryLocation = Filesystem
+    classpath: Classpath = null
 )
 
 // FIXME: https://github.com/twitter/rsc/issues/166
